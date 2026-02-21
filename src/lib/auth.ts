@@ -1,0 +1,39 @@
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+
+export async function requireAuth() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) redirect('/login');
+  return { user, supabase };
+}
+
+export async function requireWorkspaceMember(workspaceSlug: string) {
+  const { user, supabase } = await requireAuth();
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('id, slug, name')
+    .eq('slug', workspaceSlug)
+    .single();
+  if (!workspace) redirect('/onboarding');
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('id, role, status')
+    .eq('workspace_id', workspace.id)
+    .eq('user_id', user.id)
+    .single();
+  if (!member || member.status !== 'active') redirect('/onboarding');
+  return { user, supabase, workspace, member };
+}
+
+export async function requireProjectAccess(workspaceSlug: string, projectSlug: string) {
+  const { user, supabase, workspace, member } = await requireWorkspaceMember(workspaceSlug);
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, slug, title, workspace_id, status')
+    .eq('workspace_id', workspace.id)
+    .eq('slug', projectSlug)
+    .single();
+  if (!project) redirect(`/w/${workspaceSlug}/projects`);
+  return { user, supabase, workspace, member, project };
+}
