@@ -10,11 +10,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export function LoginForm() {
+const SITE_URL =
+  typeof process.env.NEXT_PUBLIC_SITE_URL === 'string' && process.env.NEXT_PUBLIC_SITE_URL
+    ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+    : '';
+
+export function LoginForm({ next }: { next?: string | null }) {
   const router = useRouter();
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
+  const redirectTo = next && next.startsWith('/') ? next : '/';
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -24,7 +30,11 @@ export function LoginForm() {
   async function onSubmit(data: LoginSchema) {
     setError(null);
     if (data.magic_link) {
-      const { error: err } = await supabase.auth.signInWithOtp({ email: data.email, options: { emailRedirectTo: `${window.location.origin}/` } });
+      const baseUrl = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      const { error: err } = await supabase.auth.signInWithOtp({
+        email: data.email,
+        options: { emailRedirectTo: `${baseUrl}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}` },
+      });
       if (err) setError(err.message);
       else setMagicLinkSent(true);
       return;
@@ -35,8 +45,10 @@ export function LoginForm() {
     }
     const { error: err } = await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
     if (err) setError(err.message);
-    else router.push('/');
-    router.refresh();
+    else {
+      router.push(redirectTo);
+      router.refresh();
+    }
   }
 
   if (magicLinkSent) {
