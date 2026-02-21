@@ -17,8 +17,8 @@ const SITE_URL =
 
 export function LoginForm({ next }: { next?: string | null }) {
   const router = useRouter();
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const supabase = createClient();
   const redirectTo = next && next.startsWith('/') ? next : '/';
 
@@ -27,19 +27,25 @@ export function LoginForm({ next }: { next?: string | null }) {
     defaultValues: { email: '', password: '' },
   });
 
-  async function onSubmit(data: LoginSchema) {
+  async function handleGoogleLogin() {
     setError(null);
-    if (data.magic_link) {
-      const baseUrl = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-      // URL exacta que está en Supabase Redirect URLs (sin query); si no, Supabase devuelve "final-link-is-invalid"
-      const { error: err } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: { emailRedirectTo: `${baseUrl}/auth/callback` },
-      });
-      if (err) setError(err.message);
-      else setMagicLinkSent(true);
+    setGoogleLoading(true);
+    const baseUrl = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${baseUrl}/auth/callback` },
+    });
+    if (err) {
+      setError(err.message);
+      setGoogleLoading(false);
       return;
     }
+    if (data?.url) window.location.href = data.url;
+    else setGoogleLoading(false);
+  }
+
+  async function onSubmit(data: LoginSchema) {
+    setError(null);
     if (!data.password) {
       setError('Contraseña requerida');
       return;
@@ -52,32 +58,39 @@ export function LoginForm({ next }: { next?: string | null }) {
     }
   }
 
-  if (magicLinkSent) {
-    return (
-      <p className="text-sm text-neutral-600 text-center py-4">
-        Revisa tu correo. Te enviamos un enlace para iniciar sesión.
-      </p>
-    );
-  }
-
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...form.register('email')} className="mt-1" />
-        {form.formState.errors.email && <p className="text-xs text-red-600 mt-1">{form.formState.errors.email.message}</p>}
+    <div className="space-y-4">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleLogin}
+        disabled={googleLoading}
+      >
+        {googleLoading ? 'Redirigiendo...' : 'Continuar con Google'}
+      </Button>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-neutral-200" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-white px-2 text-neutral-500">o con email</span>
+        </div>
       </div>
-      <div>
-        <Label htmlFor="password">Contraseña</Label>
-        <Input id="password" type="password" {...form.register('password')} className="mt-1" />
-        {form.formState.errors.password && <p className="text-xs text-red-600 mt-1">{form.formState.errors.password.message}</p>}
-      </div>
-      <div className="flex items-center gap-2">
-        <input type="checkbox" id="magic" {...form.register('magic_link')} />
-        <Label htmlFor="magic" className="font-normal">Enviar enlace mágico</Label>
-      </div>
-      <Button type="submit" className="w-full">Entrar</Button>
-    </form>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" {...form.register('email')} className="mt-1" />
+          {form.formState.errors.email && <p className="text-xs text-red-600 mt-1">{form.formState.errors.email.message}</p>}
+        </div>
+        <div>
+          <Label htmlFor="password">Contraseña</Label>
+          <Input id="password" type="password" {...form.register('password')} className="mt-1" />
+          {form.formState.errors.password && <p className="text-xs text-red-600 mt-1">{form.formState.errors.password.message}</p>}
+        </div>
+        <Button type="submit" className="w-full">Entrar</Button>
+      </form>
+    </div>
   );
 }
