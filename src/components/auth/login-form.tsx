@@ -31,9 +31,10 @@ export function LoginForm({ next }: { next?: string | null }) {
     setError(null);
     if (data.magic_link) {
       const baseUrl = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      // URL exacta que está en Supabase Redirect URLs (sin query); si no, Supabase devuelve "final-link-is-invalid"
       const { error: err } = await supabase.auth.signInWithOtp({
         email: data.email,
-        options: { emailRedirectTo: `${baseUrl}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}` },
+        options: { emailRedirectTo: `${baseUrl}/auth/callback` },
       });
       if (err) setError(err.message);
       else setMagicLinkSent(true);
