@@ -10,22 +10,13 @@ export async function createWorkspace(data: WorkspaceSchema): Promise<{ slug?: s
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'No autenticado' };
-  const { data: ws, error } = await supabase
-    .from('workspaces')
-    .insert({
-      slug: parsed.data.slug,
-      name: parsed.data.name,
-      created_by: user.id,
-    })
-    .select('id')
-    .single();
-  if (error) return { error: error.message };
-  await supabase.from('workspace_members').insert({
-    workspace_id: ws.id,
-    user_id: user.id,
-    role: 'owner',
-    status: 'active',
+  const { data: result, error } = await supabase.rpc('create_workspace_with_owner', {
+    ws_name: parsed.data.name,
+    ws_slug: parsed.data.slug,
   });
+  if (error) return { error: error.message };
+  const err = result?.error;
+  if (typeof err === 'string') return { error: err };
   revalidatePath('/');
   return { slug: parsed.data.slug };
 }
