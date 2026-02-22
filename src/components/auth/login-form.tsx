@@ -25,6 +25,8 @@ export function LoginForm({ next }: { next?: string | null }) {
   const [mode, setMode] = useState<Mode>('login');
   const [recoveryReady, setRecoveryReady] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSentTo, setForgotSentTo] = useState<string | null>(null);
   const supabase = createClient();
   const redirectTo = next && next.startsWith('/') ? next : '/';
 
@@ -117,12 +119,19 @@ export function LoginForm({ next }: { next?: string | null }) {
   async function onForgotSubmit(data: { email: string }) {
     setError(null);
     setSuccessMsg(null);
+    setForgotSentTo(null);
+    setForgotLoading(true);
     const baseUrl = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
     const { error: err } = await supabase.auth.resetPasswordForEmail(data.email, {
       redirectTo: `${baseUrl}/login`,
     });
-    if (err) setError(err.message);
-    else setSuccessMsg('Te enviamos un enlace para resetear la contraseña. Revisá tu correo.');
+    setForgotLoading(false);
+    if (err) {
+      setError(err.message);
+    } else {
+      setForgotSentTo(data.email);
+      setSuccessMsg('Listo. Revisá tu correo (y la carpeta de spam).');
+    }
   }
 
   async function onRecoverySubmit(data: { password: string }) {
@@ -157,12 +166,38 @@ export function LoginForm({ next }: { next?: string | null }) {
   }
 
   if (mode === 'forgot') {
+    if (forgotSentTo) {
+      return (
+        <div className="space-y-4">
+          <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+            <p className="text-sm font-medium text-green-800">Enlace enviado</p>
+            <p className="text-sm text-green-700 mt-1">
+              Enviamos el enlace para resetear la contraseña a <strong>{forgotSentTo}</strong>.
+            </p>
+            <p className="text-sm text-green-600 mt-2">Revisá tu correo y la carpeta de spam.</p>
+          </div>
+          <button
+            type="button"
+            className="w-full py-2 text-sm text-neutral-600 hover:underline"
+            onClick={() => setMode('login')}
+          >
+            Volver a iniciar sesión
+          </button>
+          <button
+            type="button"
+            className="w-full py-2 text-sm text-neutral-500 hover:underline"
+            onClick={() => { setForgotSentTo(null); setSuccessMsg(null); setError(null); }}
+          >
+            Enviar a otro correo
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="space-y-4">
-        <p className="text-sm text-neutral-600">Te enviamos un enlace a tu correo para resetear la contraseña.</p>
+        <p className="text-sm text-neutral-600">Ingresá tu email y te enviamos un enlace para resetear la contraseña.</p>
         <form onSubmit={forgotForm.handleSubmit(onForgotSubmit)} className="space-y-4">
           {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
-          {successMsg && <p className="text-sm text-green-600 bg-green-50 p-2 rounded">{successMsg}</p>}
           <div>
             <Label htmlFor="forgot-email">Email</Label>
             <Input id="forgot-email" type="email" {...forgotForm.register('email')} className="mt-1" />
@@ -170,7 +205,9 @@ export function LoginForm({ next }: { next?: string | null }) {
               <p className="text-xs text-red-600 mt-1">{forgotForm.formState.errors.email.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full">Enviar enlace</Button>
+          <Button type="submit" className="w-full" disabled={forgotLoading}>
+            {forgotLoading ? 'Enviando...' : 'Enviar enlace'}
+          </Button>
           <button type="button" className="text-sm text-neutral-500 hover:underline w-full" onClick={() => setMode('login')}>
             Volver a iniciar sesión
           </button>
