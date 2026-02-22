@@ -8,7 +8,8 @@ export default async function LoginPage({
   searchParams: { next?: string; error?: string; error_description?: string };
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user ?? null;
   const { next, error: urlError, error_description } = searchParams;
   if (user) redirect(next && next.startsWith('/') ? next : '/');
   const isLinkExpiredOrInvalid =

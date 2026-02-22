@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user ?? null;
   if (user) {
     const { data: member } = await supabase
       .from('workspace_members')

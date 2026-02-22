@@ -39,7 +39,8 @@ export function canManageInWorkspace(
 
 export async function requireAuth() {
   const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser();
+  const user = data?.user ?? null;
   if (error || !user) redirect('/login');
   return { user, supabase };
 }

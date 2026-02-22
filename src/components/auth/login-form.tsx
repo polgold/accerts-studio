@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,6 +20,7 @@ type Mode = 'login' | 'signup' | 'forgot' | 'recovery';
 
 export function LoginForm({ next }: { next?: string | null }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [mode, setMode] = useState<Mode>('login');
@@ -27,6 +28,7 @@ export function LoginForm({ next }: { next?: string | null }) {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSentTo, setForgotSentTo] = useState<string | null>(null);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const supabase = createClient();
   const redirectTo = next && next.startsWith('/') ? next : '/';
 
@@ -51,11 +53,25 @@ export function LoginForm({ next }: { next?: string | null }) {
     if (typeof window === 'undefined') return;
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.replace('#', ''));
-    if (params.get('type') === 'recovery') {
+    const typeRecovery = params.get('type') === 'recovery' || searchParams.get('type') === 'recovery';
+    const code = searchParams.get('code');
+    if (!typeRecovery && !code) return;
+    if (typeRecovery && !code) {
       setMode('recovery');
       setRecoveryReady(true);
+      return;
     }
-  }, []);
+    if (code) {
+      setMode('recovery');
+      createClient().auth
+        .exchangeCodeForSession(code)
+        .then(({ error: err }) => {
+          if (err) setError(err.message);
+          else setRecoveryReady(true);
+        })
+        .catch((e) => setError(e?.message ?? 'Error al verificar el enlace'));
+    }
+  }, [searchParams]);
 
   async function handleGoogleLogin() {
     setError(null);
@@ -136,30 +152,51 @@ export function LoginForm({ next }: { next?: string | null }) {
 
   async function onRecoverySubmit(data: { password: string }) {
     setError(null);
-    const { error: err } = await supabase.auth.updateUser({ password: data.password });
-    if (err) setError(err.message);
-    else {
-      setSuccessMsg('Contraseña actualizada. Ya podés entrar.');
-      setMode('login');
-      window.history.replaceState(null, '', window.location.pathname);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) {
+      setError('No se detectó la sesión. Volvé a hacer clic en el enlace del correo o pedí uno nuevo en "Olvidé mi contraseña".');
+      return;
     }
+    setRecoveryLoading(true);
+    const { error: err } = await supabase.auth.updateUser({ password: data.password });
+    setRecoveryLoading(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setSuccessMsg('Contraseña actualizada. Ya podés entrar.');
+    setMode('login');
+    window.history.replaceState(null, '', window.location.pathname);
   }
 
   if (mode === 'recovery' && recoveryReady) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-neutral-600">Elegí una nueva contraseña:</p>
-        <form onSubmit={recoveryForm.handleSubmit(onRecoverySubmit)} className="space-y-4">
+        <p className="text-sm text-neutral-600">Elegí una nueva contraseña (mínimo 8 caracteres):</p>
+        <form
+          onSubmit={recoveryForm.handleSubmit(onRecoverySubmit, (errors) => {
+            setError(errors.password?.message ?? 'Revisá los datos');
+          })}
+          className="space-y-4"
+        >
           {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
           {successMsg && <p className="text-sm text-green-600 bg-green-50 p-2 rounded">{successMsg}</p>}
           <div>
             <Label htmlFor="recovery-password">Nueva contraseña</Label>
-            <Input id="recovery-password" type="password" {...recoveryForm.register('password')} className="mt-1" />
+            <Input
+              id="recovery-password"
+              type="password"
+              autoComplete="new-password"
+              {...recoveryForm.register('password')}
+              className="mt-1"
+            />
             {recoveryForm.formState.errors.password && (
               <p className="text-xs text-red-600 mt-1">{recoveryForm.formState.errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full">Guardar contraseña</Button>
+          <Button type="submit" className="w-full" disabled={recoveryLoading}>
+            {recoveryLoading ? 'Guardando...' : 'Guardar contraseña'}
+          </Button>
         </form>
       </div>
     );

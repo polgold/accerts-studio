@@ -18,7 +18,8 @@ function isProtectedPath(pathname: string): boolean {
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const supabase = createServerClientForRouteHandler(request, response);
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user ?? null;
   const pathname = request.nextUrl.pathname;
 
   if (!user && isProtectedPath(pathname)) {
