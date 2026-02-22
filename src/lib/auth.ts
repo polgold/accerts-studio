@@ -1,38 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
-/** Email del admin desde env (Vercel: Settings → Environment Variables → ADMIN_EMAIL) */
-export function getAdminEmail(): string | null {
-  const email = process.env.ADMIN_EMAIL;
-  return typeof email === 'string' && email.trim() ? email.trim().toLowerCase() : null;
-}
-
-/** True si el email corresponde al admin configurado */
-export function isAdminEmail(email: string | undefined | null): boolean {
-  const admin = getAdminEmail();
-  if (!admin || !email) return false;
-  return email.trim().toLowerCase() === admin;
-}
-
-/** Emails con acceso especial (ver proyectos, leer confidenciales, comentar). Desde env SPECIAL_ACCESS_EMAILS (separados por coma). */
-export function getSpecialAccessEmails(): string[] {
-  const raw = process.env.SPECIAL_ACCESS_EMAILS;
-  if (typeof raw !== 'string' || !raw.trim()) return [];
-  return raw.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
-}
-
-/** True si el email tiene acceso especial (lectura confidencial + comentar) */
-export function isSpecialAccessUser(email: string | undefined | null): boolean {
-  if (!email) return false;
-  return getSpecialAccessEmails().includes(email.trim().toLowerCase());
-}
-
-/** True si el usuario puede agregar/quitar/modificar (admin o rol de gestión en el workspace) */
+/** True si el usuario puede agregar/quitar/modificar según su rol en el workspace */
 export function canManageInWorkspace(
-  userEmail: string | undefined | null,
+  _userEmail: string | undefined | null,
   memberRole: string | undefined | null
 ): boolean {
-  if (isAdminEmail(userEmail)) return true;
   const managingRoles = ['owner', 'admin', 'producer', 'collaborator'];
   return memberRole != null && managingRoles.includes(memberRole);
 }

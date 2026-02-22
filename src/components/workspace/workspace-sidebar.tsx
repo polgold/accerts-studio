@@ -8,6 +8,7 @@ import {
   PlusCircle,
   Settings,
   Search,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +40,7 @@ export function WorkspaceSidebar({
         </Link>
         <p className="text-xs text-neutral-500 mt-0.5">/{workspaceSlug}</p>
       </div>
-      <nav className="p-2 flex-1">
+      <nav className="p-2 flex-1 flex flex-col">
         {navFiltered.map(({ href, label, icon: Icon }) => {
           const hrefFull = href === 'dashboard' ? base : `${base}/${href}`;
           const active = href === 'dashboard' ? pathname === base || pathname === `${base}/dashboard` : pathname.startsWith(hrefFull);
@@ -57,6 +58,15 @@ export function WorkspaceSidebar({
             </Link>
           );
         })}
+        <div className="mt-auto pt-2 border-t border-neutral-200">
+          <Link
+            href="/logout"
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            Salir
+          </Link>
+        </div>
       </nav>
     </aside>
   );

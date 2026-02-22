@@ -106,7 +106,7 @@ export function LoginForm({ next }: { next?: string | null }) {
 
   async function onLoginSubmit(data: LoginSchema) {
     setError(null);
-    if (!data.password) {
+    if (!data.password?.trim()) {
       setError('Contraseña requerida');
       return;
     }
@@ -116,6 +116,23 @@ export function LoginForm({ next }: { next?: string | null }) {
       router.push(redirectTo);
       router.refresh();
     }
+  }
+
+  async function onMagicLink() {
+    setError(null);
+    setSuccessMsg(null);
+    const email = loginForm.getValues('email');
+    if (!email?.trim()) {
+      setError('Ingresá tu email primero.');
+      return;
+    }
+    const baseUrl = SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+    const { error: err } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${baseUrl}/auth/callback` },
+    });
+    if (err) setError(err.message);
+    else setSuccessMsg('Revisá tu correo y hacé clic en el enlace para entrar.');
   }
 
   async function onSignupSubmit(data: z.infer<typeof signUpSchema>) {
@@ -308,6 +325,9 @@ export function LoginForm({ next }: { next?: string | null }) {
           {loginForm.formState.errors.password && <p className="text-xs text-red-600 mt-1">{loginForm.formState.errors.password.message}</p>}
         </div>
         <Button type="submit" className="w-full">Entrar</Button>
+        <button type="button" className="w-full text-sm text-neutral-500 hover:underline" onClick={onMagicLink}>
+          Enviar enlace mágico al email
+        </button>
         <div className="flex flex-col gap-1 text-center">
           <button type="button" className="text-sm text-neutral-500 hover:underline" onClick={() => setMode('forgot')}>
             Olvidé mi contraseña
