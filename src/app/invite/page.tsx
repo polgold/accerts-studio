@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { acceptInvite } from '@/app/actions/workspace';
 import { InviteAcceptForm } from '@/components/auth/invite-accept-form';
@@ -7,7 +7,7 @@ export default async function InvitePage({ searchParams }: { searchParams: { tok
   const token = searchParams.token;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!token) redirect('/login');
+  if (!token) notFound();
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">

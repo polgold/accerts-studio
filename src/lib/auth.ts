@@ -10,16 +10,18 @@ export function canManageInWorkspace(
   return memberRole != null && managingRoles.includes(memberRole);
 }
 
+/** No redirige: el guard de sesión vive en middleware y en layout /w/[workspaceSlug]. */
 export async function requireAuth() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
-  const user = data?.user ?? null;
-  if (error || !user) redirect('/login');
+  const user = error ? null : data?.user ?? null;
   return { user, supabase };
 }
 
 export async function requireWorkspaceMember(workspaceSlug: string) {
   const { user, supabase } = await requireAuth();
+  // Bajo /w/* el guard ya corrió en middleware y layout; no redirigir aquí.
+  if (!user) throw new Error('Unauthorized');
   const { data: workspace } = await supabase
     .from('workspaces')
     .select('id, slug, name')

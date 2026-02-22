@@ -1,15 +1,21 @@
-import { createServerClient as createSupabaseServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const PUBLIC_PATHS = ['/login', '/auth/callback', '/logout'];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+}
+
 /**
- * Crea un cliente Supabase para middleware/route handlers que lee cookies del request
- * y escribe en el response para que la sesión persista (SSR cookie bridge).
+ * Crea cliente Supabase en middleware (req/res). Solo para uso interno en updateSession
+ * y en Route Handlers que deban escribir cookies en una respuesta concreta.
  */
-export function createServerClient(
+export function createServerClientForMiddleware(
   request: NextRequest,
   response: NextResponse
 ) {
-  return createSupabaseServerClient(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -27,29 +33,21 @@ export function createServerClient(
   );
 }
 
-const PUBLIC_PATHS = ['/', '/login', '/auth/callback', '/invite'];
-const SHARED_LINK_PREFIX = '/s/';
-
-function isPublicPath(pathname: string): boolean {
-  if (PUBLIC_PATHS.some((p) => p === pathname)) return true;
-  if (pathname.startsWith(SHARED_LINK_PREFIX)) return true;
-  if (pathname.startsWith('/api/')) return true;
-  if (pathname.startsWith('/_next/')) return true;
-  return false;
-}
-
-function isProtectedPath(pathname: string): boolean {
-  return pathname.startsWith('/w/') || pathname === '/onboarding' || pathname === '/public-docs';
-}
-
+/**
+ * Refresca sesión (getUser) y protege /w/*: sin user redirige a /login?next=<path>.
+ * Rutas públicas (no redirige): /login, /auth/callback, /logout.
+ */
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient(request, response);
+  const response = NextResponse.next({ request });
+  const supabase = createServerClientForMiddleware(request, response);
   const { data } = await supabase.auth.getUser();
   const user = data?.user ?? null;
   const pathname = request.nextUrl.pathname;
 
-  if (!user && isProtectedPath(pathname)) {
+  if (isPublicPath(pathname)) {
+    return response;
+  }
+  if (pathname.startsWith('/w/') && !user) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);

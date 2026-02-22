@@ -21,9 +21,10 @@ Plataforma de gestión de producciones y boards visuales (estilo StudioBinder + 
    - Opcional: en **Policies** del bucket añade políticas para que los usuarios autenticados puedan subir/leer según RLS (o usa las políticas por defecto si las creas vía SQL en `storage.objects`).
 4. **Authentication** → **Providers**: habilita Email y opcionalmente Magic Link.
 5. Copia `.env.example` a `.env.local` y rellena:
-   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_URL`: URL del proyecto Supabase (ej. `https://xxxx.supabase.co`). Debe ser el dominio de Supabase, **no** el de Vercel.
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor; nunca en cliente)
+   - `NEXT_PUBLIC_SITE_URL`: solo para redirects de auth (magic link, callback). En producción usar `https://accerts-studio.vercel.app`.
    - `NEXT_PUBLIC_APP_URL` (ej. `http://localhost:3000` o tu dominio en producción)
 
 ## Desarrollo local

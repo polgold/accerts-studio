@@ -1,9 +1,10 @@
-import { createServerClient } from '@/lib/supabase/middleware';
+import { createServerClientForRouteHandler } from '@/lib/supabase/route-handler';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const response = NextResponse.redirect(new URL('/login', request.url));
-  const supabase = createServerClient(request, response);
+  const loginUrl = new URL('/login', request.url);
+  const response = NextResponse.redirect(loginUrl);
+  const supabase = createServerClientForRouteHandler(request, response);
   await supabase.auth.signOut();
   return response;
 }

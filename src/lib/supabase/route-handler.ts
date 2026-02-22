@@ -1,10 +1,10 @@
 import { type NextRequest, type NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/middleware';
+import { createServerClientForMiddleware } from '@/lib/supabase/middleware';
 
-/** Cliente Supabase para Route Handlers (misma cookie bridge que middleware). */
+/** Cliente Supabase para Route Handlers que escriben cookies en la respuesta (auth callback, logout, debug). */
 export function createServerClientForRouteHandler(
   request: NextRequest,
   response: NextResponse
 ) {
-  return createServerClient(request, response);
+  return createServerClientForMiddleware(request, response);
 }
