@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +29,12 @@ export function NewProjectForm({ workspaceSlug }: { workspaceSlug: string }) {
     },
   });
 
-  form.watch('title') && form.setValue('slug', generateSlug(form.getValues('title')), { shouldValidate: true });
+  const title = form.watch('title');
+  useEffect(() => {
+    if (!form.formState.dirtyFields.slug) {
+      form.setValue('slug', generateSlug(title ?? ''), { shouldValidate: true });
+    }
+  }, [title]);
 
   async function onSubmit(data: FormData) {
     const result = await createProject(workspaceSlug, data);
