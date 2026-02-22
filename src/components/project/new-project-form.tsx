@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { projectSchema, projectStatuses, type ProjectSchema } from '@/lib/validations';
+import { projectSchema, projectStatuses, projectVisibilities, type ProjectSchema } from '@/lib/validations';
 import { createProject } from '@/app/actions/project';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ export function NewProjectForm({ workspaceSlug }: { workspaceSlug: string }) {
       slug: '',
       client_name: '',
       status: 'draft',
+      visibility: 'workspace',
       start_date: '',
       end_date: '',
       logline: '',
@@ -69,10 +70,22 @@ export function NewProjectForm({ workspaceSlug }: { workspaceSlug: string }) {
         <select
           id="status"
           {...form.register('status')}
-          className="mt-1 flex h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 py-1 text-sm"
+          className="mt-1 flex h-9 w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-1 text-sm text-[var(--foreground)]"
         >
           {projectStatuses.map((s) => (
             <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <Label htmlFor="visibility">Visibilidad</Label>
+        <select
+          id="visibility"
+          {...form.register('visibility')}
+          className="mt-1 flex h-9 w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-1 text-sm text-[var(--foreground)]"
+        >
+          {projectVisibilities.map((v) => (
+            <option key={v} value={v}>{v === 'workspace' ? 'Solo workspace' : 'Público'}</option>
           ))}
         </select>
       </div>

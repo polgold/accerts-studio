@@ -37,11 +37,13 @@ export const workspaceSchema = z.object({
 });
 export type WorkspaceSchema = z.infer<typeof workspaceSchema>;
 
+export const projectVisibilities = ['workspace', 'public'] as const;
 export const projectSchema = z.object({
   title: z.string().min(1).max(500),
   slug: slugSchema,
   client_name: z.string().max(200).nullable(),
   status: z.enum(projectStatuses),
+  visibility: z.enum(projectVisibilities),
   start_date: z.string().nullable(),
   end_date: z.string().nullable(),
   logline: z.string().nullable(),

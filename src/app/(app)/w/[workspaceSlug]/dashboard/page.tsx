@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { requireWorkspaceMember, canManageInWorkspace } from '@/lib/auth';
+import { requireWorkspaceMember, isWorkspaceAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
@@ -7,7 +7,7 @@ import { formatDate } from '@/lib/utils';
 export default async function DashboardPage({ params }: { params: { workspaceSlug: string } }) {
   const { workspaceSlug } = params;
   const { user, workspace, member, supabase } = await requireWorkspaceMember(workspaceSlug);
-  const canManage = canManageInWorkspace(user?.email ?? null, member?.role ?? null);
+  const canManage = isWorkspaceAdmin(member?.role ?? null);
   const { data: projects } = await supabase
     .from('projects')
     .select('id, slug, title, status, start_date, end_date')

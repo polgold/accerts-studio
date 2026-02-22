@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FolderKanban, Settings } from 'lucide-react';
@@ -21,11 +22,22 @@ export function Sidebar({
 
   return (
     <aside className="w-56 border-r flex flex-col shrink-0 bg-[var(--sidebar-bg)] border-[var(--border)]">
-      <div className="p-4 border-b border-[var(--border)]">
-        <Link href={base} className="font-heading font-semibold text-[var(--heading-color)] tracking-tight">
-          {workspaceName}
+      <div className="p-4 border-b border-[var(--border)] flex flex-col gap-3">
+        <Link href={base} className="flex items-center">
+          <Image
+            src="/brand/accerts-logo.png"
+            alt="Accerts"
+            width={140}
+            height={44}
+            className="h-9 w-auto object-contain object-left"
+          />
         </Link>
-        <p className="text-xs text-[var(--muted)] mt-0.5">/{workspaceSlug}</p>
+        <div>
+          <Link href={base} className="font-heading font-semibold text-[var(--heading-color)] tracking-tight text-sm block">
+            {workspaceName}
+          </Link>
+          <p className="text-xs text-[var(--muted)] mt-0.5">/{workspaceSlug}</p>
+        </div>
       </div>
       <nav className="p-2 flex-1">
         <Link

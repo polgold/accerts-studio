@@ -18,6 +18,7 @@ export async function createProject(workspaceSlug: string, data: ProjectSchema):
       title: parsed.data.title,
       client_name: parsed.data.client_name || null,
       status: parsed.data.status,
+      visibility: parsed.data.visibility ?? 'workspace',
       start_date: parsed.data.start_date || null,
       end_date: parsed.data.end_date || null,
       logline: parsed.data.logline || null,

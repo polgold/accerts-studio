@@ -10,6 +10,11 @@ export function canManageInWorkspace(
   return memberRole != null && managingRoles.includes(memberRole);
 }
 
+/** True si el usuario es admin/owner del workspace (por rol en DB) */
+export function isWorkspaceAdmin(memberRole: string | undefined | null): boolean {
+  return memberRole != null && (memberRole === 'owner' || memberRole === 'admin');
+}
+
 /** No redirige: el guard de sesión vive en middleware y en layout /w/[workspaceSlug]. */
 export async function requireAuth() {
   const supabase = await createClient();
