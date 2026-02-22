@@ -26,7 +26,7 @@ export function OnboardingForm({ userId }: { userId: string }) {
     const result = await createWorkspace(data);
     if (result.error) setError(result.error);
     else if (result.slug) {
-      router.push(`/w/${result.slug}/dashboard`);
+      router.push(`/w/${result.slug}/projects`);
       router.refresh();
     }
   }

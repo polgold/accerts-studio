@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard,
   FolderKanban,
   PlusCircle,
   Settings,
@@ -13,7 +12,6 @@ import {
 import { cn } from '@/lib/utils';
 
 const nav = [
-  { href: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: 'projects', label: 'Proyectos', icon: FolderKanban },
   { href: 'projects/new', label: 'Nuevo proyecto', icon: PlusCircle, manageOnly: true },
   { href: 'search', label: 'Buscar', icon: Search },
@@ -35,15 +33,15 @@ export function WorkspaceSidebar({
   return (
     <aside className="w-56 border-r border-neutral-200 bg-white flex flex-col">
       <div className="p-4 border-b border-neutral-200">
-        <Link href={base} className="font-semibold text-neutral-900 tracking-tight">
+        <Link href={`${base}/projects`} className="font-semibold text-neutral-900 tracking-tight">
           {workspaceName}
         </Link>
         <p className="text-xs text-neutral-500 mt-0.5">/{workspaceSlug}</p>
       </div>
       <nav className="p-2 flex-1 flex flex-col">
         {navFiltered.map(({ href, label, icon: Icon }) => {
-          const hrefFull = href === 'dashboard' ? base : `${base}/${href}`;
-          const active = href === 'dashboard' ? pathname === base || pathname === `${base}/dashboard` : pathname.startsWith(hrefFull);
+          const hrefFull = `${base}/${href}`;
+          const active = href === 'projects' ? pathname === hrefFull || pathname.startsWith(`${base}/p/`) : pathname.startsWith(hrefFull);
           return (
             <Link
               key={href}

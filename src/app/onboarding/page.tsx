@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
     .limit(1)
     .single();
   const slug = (member as { workspaces?: { slug: string } } | null)?.workspaces?.slug;
-  if (slug) redirect(`/w/${slug}/dashboard`);
+  if (slug) redirect(`/w/${slug}/projects`);
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md">
