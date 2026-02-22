@@ -14,7 +14,7 @@ export default async function HomePage() {
       .single();
     const slug = (member as { workspaces?: { slug: string } } | null)?.workspaces?.slug;
     if (slug) redirect(`/w/${slug}/dashboard`);
-    redirect('/onboarding');
+    redirect('/public-docs');
   }
   redirect('/login');
 }

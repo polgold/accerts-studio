@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { requireProjectAccess } from '@/lib/auth';
+import { requireProjectAccess, canManageInWorkspace } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { DocumentsList } from '@/components/documents/documents-list';
@@ -12,7 +12,8 @@ export default async function DocumentsPage({
   params: { workspaceSlug: string; projectSlug: string };
   searchParams: { folder?: string; type?: string; q?: string };
 }) {
-  const { project, supabase } = await requireProjectAccess(params.workspaceSlug, params.projectSlug);
+  const { user, project, member, supabase } = await requireProjectAccess(params.workspaceSlug, params.projectSlug);
+  const canManage = canManageInWorkspace(user?.email ?? null, member?.role ?? null);
   const sp = searchParams;
   const { data: folders } = await supabase
     .from('folders')
@@ -45,9 +46,11 @@ export default async function DocumentsPage({
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-neutral-900">Documentos</h2>
-          <Button asChild size="sm">
-            <Link href={`/w/${params.workspaceSlug}/p/${params.projectSlug}/documents/new`}>Nuevo documento</Link>
-          </Button>
+          {canManage && (
+            <Button asChild size="sm">
+              <Link href={`/w/${params.workspaceSlug}/p/${params.projectSlug}/documents/new`}>Nuevo documento</Link>
+            </Button>
+          )}
         </div>
         <DocumentsList
           workspaceSlug={params.workspaceSlug}

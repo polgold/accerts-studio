@@ -14,14 +14,23 @@ import { cn } from '@/lib/utils';
 const nav = [
   { href: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: 'projects', label: 'Proyectos', icon: FolderKanban },
-  { href: 'projects/new', label: 'Nuevo proyecto', icon: PlusCircle },
+  { href: 'projects/new', label: 'Nuevo proyecto', icon: PlusCircle, manageOnly: true },
   { href: 'search', label: 'Buscar', icon: Search },
-  { href: 'settings/members', label: 'Miembros', icon: Settings },
+  { href: 'settings/members', label: 'Miembros', icon: Settings, manageOnly: true },
 ];
 
-export function WorkspaceSidebar({ workspaceSlug, workspaceName }: { workspaceSlug: string; workspaceName: string }) {
+export function WorkspaceSidebar({
+  workspaceSlug,
+  workspaceName,
+  canManage = false,
+}: {
+  workspaceSlug: string;
+  workspaceName: string;
+  canManage?: boolean;
+}) {
   const pathname = usePathname();
   const base = `/w/${workspaceSlug}`;
+  const navFiltered = nav.filter((item) => !('manageOnly' in item && item.manageOnly) || canManage);
   return (
     <aside className="w-56 border-r border-neutral-200 bg-white flex flex-col">
       <div className="p-4 border-b border-neutral-200">
@@ -31,7 +40,7 @@ export function WorkspaceSidebar({ workspaceSlug, workspaceName }: { workspaceSl
         <p className="text-xs text-neutral-500 mt-0.5">/{workspaceSlug}</p>
       </div>
       <nav className="p-2 flex-1">
-        {nav.map(({ href, label, icon: Icon }) => {
+        {navFiltered.map(({ href, label, icon: Icon }) => {
           const hrefFull = href === 'dashboard' ? base : `${base}/${href}`;
           const active = href === 'dashboard' ? pathname === base || pathname === `${base}/dashboard` : pathname.startsWith(hrefFull);
           return (

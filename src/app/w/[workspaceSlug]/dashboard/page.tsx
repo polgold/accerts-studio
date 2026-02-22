@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { requireWorkspaceMember } from '@/lib/auth';
+import { requireWorkspaceMember, canManageInWorkspace } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 
 export default async function DashboardPage({ params }: { params: { workspaceSlug: string } }) {
   const { workspaceSlug } = params;
-  const { workspace, supabase } = await requireWorkspaceMember(workspaceSlug);
+  const { user, workspace, member, supabase } = await requireWorkspaceMember(workspaceSlug);
+  const canManage = canManageInWorkspace(user?.email ?? null, member?.role ?? null);
   const { data: projects } = await supabase
     .from('projects')
     .select('id, slug, title, status, start_date, end_date')
@@ -25,9 +26,11 @@ export default async function DashboardPage({ params }: { params: { workspaceSlu
       <p className="text-neutral-500 mt-1">Workspace: {workspace.name}</p>
       <div className="mt-8 flex justify-between items-center">
         <h2 className="text-lg font-medium text-neutral-900">Proyectos recientes</h2>
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/w/${workspaceSlug}/projects/new`}>Nuevo proyecto</Link>
-        </Button>
+        {canManage && (
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/w/${workspaceSlug}/projects/new`}>Nuevo proyecto</Link>
+          </Button>
+        )}
       </div>
       <ul className="mt-4 space-y-2">
         {(projects ?? []).map((p) => (

@@ -12,7 +12,7 @@ function isPublicPath(pathname: string): boolean {
 }
 
 function isProtectedPath(pathname: string): boolean {
-  return pathname.startsWith('/w/') || pathname === '/onboarding';
+  return pathname.startsWith('/w/') || pathname === '/onboarding' || pathname === '/public-docs';
 }
 
 export async function updateSession(request: NextRequest) {

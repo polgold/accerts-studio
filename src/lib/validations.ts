@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const workspaceMemberRoles = ['owner', 'admin', 'producer', 'collaborator', 'client', 'vendor', 'viewer'] as const;
 export const projectStatuses = ['draft', 'pre_production', 'production', 'post_production', 'delivered', 'archived'] as const;
 export const docTypes = ['pdf', 'image', 'video_link', 'text', 'screenplay', 'call_sheet', 'shot_list', 'storyboard', 'moodboard', 'other'] as const;
-export const docVisibilities = ['private', 'team', 'client'] as const;
+export const docVisibilities = ['private', 'team', 'client', 'public'] as const;
 export const taskStatuses = ['todo', 'doing', 'blocked', 'done'] as const;
 export const boardModes = ['freeform', 'columns'] as const;
 export const cardTypes = ['image', 'pdf', 'text', 'link', 'checklist', 'column'] as const;

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { documentSchema, type DocumentSchema } from '@/lib/validations';
+import { isAdminEmail } from '@/lib/auth';
 
 export async function createDocument(projectId: string, data: DocumentSchema): Promise<{ documentId?: string; error?: string }> {
   const parsed = documentSchema.safeParse(data);
@@ -95,7 +96,18 @@ export async function addComment(
     content: content.slice(0, 10000),
     status: 'open',
   });
-  return error ? { error: error.message } : {};
+  if (error) return { error: error.message };
+  const adminUserId = process.env.ADMIN_USER_ID?.trim();
+  if (adminUserId && !isAdminEmail(user.email)) {
+    await supabase.from('notifications').insert({
+      user_id: adminUserId,
+      title: 'Nuevo comentario',
+      body: content.slice(0, 200) + (content.length > 200 ? '…' : ''),
+      entity_type: entityType,
+      entity_id: entityId,
+    });
+  }
+  return {};
 }
 
 export async function resolveComment(commentId: string, resolved: boolean): Promise<{ error?: string }> {
