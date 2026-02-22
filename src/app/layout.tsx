@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="font-sans">
-      <body className="min-h-screen bg-[var(--background)] font-sans antialiased">
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] font-sans antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

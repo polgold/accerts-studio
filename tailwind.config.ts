@@ -9,12 +9,20 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['var(--font-body)'],
+        heading: ['var(--font-heading)'],
         mono: ['ui-monospace', 'monospace'],
       },
+      colors: {
+        brand: {
+          primary: 'var(--primary)',
+          accent: 'var(--accent)',
+          muted: 'var(--muted)',
+        },
+      },
       boxShadow: {
-        soft: '0 2px 8px rgba(0,0,0,0.06)',
-        card: '0 4px 12px rgba(0,0,0,0.08)',
+        soft: 'var(--shadow-soft)',
+        card: 'var(--shadow-card)',
       },
     },
   },

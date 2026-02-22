@@ -1,25 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Montserrat:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground: #0a0a0a;
-  --background: #fafafa;
-  --muted: #737373;
-  --border: #e5e5e5;
-  --card: #ffffff;
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* accerts.com body */
+  --font-body: 'Montserrat', sans-serif;
+  --font-heading: 'Cinzel', serif;
+  --background: #000000;
+  --foreground: #e2e2e2;
+  --heading-color: #ffffff;
+
+  /* Brand (rootVars) */
+  --primary: #000000;
+  --secondary: #424242;
+  --accent: #e4cb86;
+  --border: #333333;
+  --border-light: #dddddd;
+  --muted: #8a8a8a;
+  --white: #ffffff;
+
+  /* Surfaces (dark default) */
+  --sidebar-bg: #0a0a0a;
+  --topbar-bg: #0a0a0a;
+  --card-bg: #111111;
+  --input-bg: #111111;
+  --input-border: #333333;
+  --focus-ring: #e4cb86;
+
+  /* Shadows (from rootVars) */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .font-heading {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    color: var(--heading-color);
   }
 }

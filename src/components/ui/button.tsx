@@ -4,15 +4,15 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: 'bg-neutral-900 text-white hover:bg-neutral-800',
-        secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200',
-        outline: 'border border-neutral-300 bg-white hover:bg-neutral-50',
-        ghost: 'hover:bg-neutral-100',
-        link: 'text-neutral-900 underline-offset-4 hover:underline',
+        default: 'bg-[var(--accent)] text-[var(--primary)] hover:opacity-90',
+        secondary: 'bg-[var(--card-bg)] text-[var(--foreground)] hover:bg-[var(--input-bg)] border border-[var(--border)]',
+        outline: 'border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--card-bg)]',
+        ghost: 'text-[var(--foreground)] hover:bg-[var(--card-bg)]',
+        link: 'text-[var(--accent)] underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-9 px-4 py-2',

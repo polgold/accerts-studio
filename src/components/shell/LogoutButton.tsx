@@ -3,7 +3,7 @@
 export function LogoutButton() {
   return (
     <form action="/logout" method="post">
-      <button type="submit" className="text-sm text-neutral-600 hover:text-neutral-900">
+      <button type="submit" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)]">
         Salir
       </button>
     </form>

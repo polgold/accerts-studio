@@ -13,7 +13,7 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-neutral-50">
+    <div className="flex min-h-screen bg-[var(--background)]">
       <Sidebar
         workspaceSlug={workspaceSlug}
         workspaceName={workspaceName}
