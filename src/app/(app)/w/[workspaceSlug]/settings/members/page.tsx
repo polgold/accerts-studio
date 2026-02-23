@@ -25,31 +25,31 @@ export default async function MembersPage({ params }: { params: { workspaceSlug:
     .gt('expires_at', new Date().toISOString());
   return (
     <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold text-neutral-900">Miembros del workspace</h1>
-      <p className="text-neutral-500 mt-1">Invita por email y gestiona roles.</p>
+      <h1 className="text-2xl font-semibold text-[var(--foreground)]">Miembros del workspace</h1>
+      <p className="text-[var(--muted)] mt-1">Invita por email y gestiona roles.</p>
       <InviteMemberForm workspaceId={workspace.id} workspaceSlug={workspaceSlug} />
       <div className="mt-8">
-        <h2 className="text-sm font-medium text-neutral-700">Miembros</h2>
+        <h2 className="text-sm font-medium text-[var(--muted-strong)]">Miembros</h2>
         <ul className="mt-2 space-y-2">
           {(members ?? []).map((m: { id: string; user_id: string; role: string; status: string }) => (
-            <li key={m.id} className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 py-3">
-              <span className="font-medium text-neutral-900">{profilesMap[m.user_id] ?? m.user_id.slice(0, 8)}</span>
-              <span className="text-sm text-neutral-500">{m.role} · {m.status}</span>
+            <li key={m.id} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-4 py-3">
+              <span className="font-medium text-[var(--foreground)]">{profilesMap[m.user_id] ?? m.user_id.slice(0, 8)}</span>
+              <span className="text-sm text-[var(--muted)]">{m.role} · {m.status}</span>
             </li>
           ))}
         </ul>
       </div>
       <div className="mt-6">
-        <h2 className="text-sm font-medium text-neutral-700">Invitaciones pendientes</h2>
+        <h2 className="text-sm font-medium text-[var(--muted-strong)]">Invitaciones pendientes</h2>
         <ul className="mt-2 space-y-2">
           {(invites ?? []).map((i: { id: string; email: string; role: string; expires_at: string }) => (
-            <li key={i.id} className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 py-3">
-              <span>{i.email}</span>
-              <span className="text-sm text-neutral-500">{i.role}</span>
+            <li key={i.id} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-4 py-3">
+              <span className="text-[var(--foreground)]">{i.email}</span>
+              <span className="text-sm text-[var(--muted)]">{i.role}</span>
             </li>
           ))}
         </ul>
-        {(!invites || invites.length === 0) && <p className="text-neutral-500 text-sm mt-2">Sin invitaciones pendientes.</p>}
+        {(!invites || invites.length === 0) && <p className="text-[var(--muted)] text-sm mt-2">Sin invitaciones pendientes.</p>}
       </div>
     </div>
   );

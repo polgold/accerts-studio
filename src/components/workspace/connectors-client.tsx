@@ -83,7 +83,7 @@ export function ConnectorsClient({
       {message && (
         <div
           className={`rounded-lg px-4 py-3 text-sm ${
-            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            message.type === 'success' ? 'bg-[var(--success-bg)] text-[var(--success-text)]' : 'bg-[var(--error-bg)] text-[var(--error-text)]'
           }`}
         >
           {message.text}
@@ -91,33 +91,33 @@ export function ConnectorsClient({
       )}
 
       <section>
-        <h2 className="text-sm font-medium text-neutral-700">Cuentas Microsoft</h2>
+        <h2 className="text-sm font-medium text-[var(--muted-strong)]">Cuentas Microsoft</h2>
         {loadingStatus ? (
-          <p className="mt-2 text-neutral-500 flex items-center gap-2">
+          <p className="mt-2 text-[var(--muted)] flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" /> Cargando…
           </p>
         ) : (
           <ul className="mt-2 space-y-2">
             {connections.length === 0 && (
-              <li className="rounded-lg border border-neutral-200 bg-white px-4 py-3 text-neutral-500">
+              <li className="rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-4 py-3 text-[var(--muted)]">
                 No hay cuentas conectadas.
               </li>
             )}
             {connections.map((c) => (
               <li
                 key={c.id}
-                className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-4 py-3"
               >
                 <div className="flex flex-col min-w-0">
-                  <span className="font-medium text-neutral-900">{c.displayName}</span>
-                  <span className="text-xs text-neutral-500">
+                  <span className="font-medium text-[var(--foreground)]">{c.displayName}</span>
+                  <span className="text-xs text-[var(--muted)]">
                     Conectada {new Date(c.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => disconnect(c.id)}
-                  className="ml-2 shrink-0 inline-flex items-center gap-1 rounded border border-neutral-300 px-2 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100"
+                  className="ml-2 shrink-0 inline-flex items-center gap-1 rounded border border-[var(--border-strong)] px-2 py-1.5 text-xs font-medium text-[var(--muted)] hover:bg-[var(--input-bg)] hover:text-[var(--foreground)]"
                   title="Desconectar cuenta"
                 >
                   <Unplug className="h-3.5 w-3.5" />
@@ -130,7 +130,7 @@ export function ConnectorsClient({
         <button
           type="button"
           onClick={startOAuth}
-          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--primary)] hover:opacity-90"
         >
           <Cloud className="h-4 w-4" />
           Conectar SharePoint
@@ -326,16 +326,16 @@ function SharePointBrowser({
   };
 
   return (
-    <section className="rounded-lg border border-neutral-200 bg-white p-4">
-      <h2 className="text-sm font-medium text-neutral-700 mb-4">Importar desde SharePoint</h2>
+    <section className="rounded-lg border border-[var(--border)] bg-[var(--card-bg)] p-4">
+      <h2 className="text-sm font-medium text-[var(--muted-strong)] mb-4">Importar desde SharePoint</h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="text-xs text-neutral-500">Cuenta</span>
+          <span className="text-xs text-[var(--muted)]">Cuenta</span>
           <select
             value={connectionId}
             onChange={(e) => setConnectionId(e.target.value)}
-            className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+            className="mt-1 block w-full rounded border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--foreground)]"
           >
             {connections.map((c) => (
               <option key={c.id} value={c.id}>{c.displayName}</option>
@@ -343,12 +343,12 @@ function SharePointBrowser({
           </select>
         </label>
         <label className="block">
-          <span className="text-xs text-neutral-500">Site</span>
+          <span className="text-xs text-[var(--muted)]">Site</span>
           <select
             value={siteId}
             onChange={(e) => onSiteChange(e.target.value)}
             disabled={loading === 'sites'}
-            className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2 text-sm disabled:opacity-50"
+            className="mt-1 block w-full rounded border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--foreground)] disabled:opacity-50"
           >
             <option value="">Seleccionar site</option>
             {sites.map((s) => (
@@ -357,12 +357,12 @@ function SharePointBrowser({
           </select>
         </label>
         <label className="block">
-          <span className="text-xs text-neutral-500">Biblioteca de documentos</span>
+          <span className="text-xs text-[var(--muted)]">Biblioteca de documentos</span>
           <select
             value={driveId}
             onChange={(e) => onDriveChange(e.target.value)}
             disabled={loading === 'drives'}
-            className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2 text-sm disabled:opacity-50"
+            className="mt-1 block w-full rounded border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--foreground)] disabled:opacity-50"
           >
             <option value="">Seleccionar biblioteca</option>
             {drives.map((d) => (
@@ -371,12 +371,12 @@ function SharePointBrowser({
           </select>
         </label>
         <label className="block">
-          <span className="text-xs text-neutral-500">Carpeta</span>
+          <span className="text-xs text-[var(--muted)]">Carpeta</span>
           <select
             value={folderId ?? ''}
             onChange={(e) => onFolderSelect(e.target.value || null)}
             disabled={loading === 'folders'}
-            className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2 text-sm disabled:opacity-50"
+            className="mt-1 block w-full rounded border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--foreground)] disabled:opacity-50"
           >
             <option value="">Raíz</option>
             {folders.map((f) => (
@@ -391,7 +391,7 @@ function SharePointBrowser({
           type="button"
           onClick={() => loadFiles(folderId)}
           disabled={loading === 'files'}
-          className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 disabled:opacity-50"
+          className="mt-2 text-sm text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
         >
           {loading === 'files' ? 'Cargando…' : 'Actualizar lista de archivos'}
         </button>
@@ -399,11 +399,11 @@ function SharePointBrowser({
 
       {projects.length > 0 && (
         <label className="mt-4 block">
-          <span className="text-xs text-neutral-500">Importar al proyecto</span>
+          <span className="text-xs text-[var(--muted)]">Importar al proyecto</span>
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="mt-1 block w-full max-w-xs rounded border border-neutral-300 px-3 py-2 text-sm"
+            className="mt-1 block w-full max-w-xs rounded border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--foreground)]"
           >
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
@@ -414,23 +414,23 @@ function SharePointBrowser({
 
       <div className="mt-4">
         {loading === 'files' ? (
-          <p className="flex items-center gap-2 text-neutral-500 text-sm">
+          <p className="flex items-center gap-2 text-[var(--muted)] text-sm">
             <Loader2 className="h-4 w-4 animate-spin" /> Cargando archivos…
           </p>
         ) : files.length === 0 && driveId ? (
-          <p className="text-neutral-500 text-sm">No hay archivos en esta carpeta.</p>
+          <p className="text-[var(--muted)] text-sm">No hay archivos en esta carpeta.</p>
         ) : (
           <ul className="space-y-2">
             {files.map((f) => (
               <li
                 key={f.id}
-                className="flex items-center justify-between rounded border border-neutral-200 px-3 py-2"
+                className="flex items-center justify-between rounded border border-[var(--border)] bg-[var(--input-bg)] px-3 py-2"
               >
-                <span className="flex items-center gap-2 text-sm">
-                  <FileText className="h-4 w-4 text-neutral-400" />
+                <span className="flex items-center gap-2 text-sm text-[var(--foreground)]">
+                  <FileText className="h-4 w-4 text-[var(--muted)]" />
                   {f.name}
                   {f.size > 0 && (
-                    <span className="text-neutral-400 text-xs">
+                    <span className="text-[var(--muted)] text-xs">
                       ({(f.size / 1024).toFixed(1)} KB)
                     </span>
                   )}
@@ -439,7 +439,7 @@ function SharePointBrowser({
                   type="button"
                   onClick={() => handleImport(f.id, f.name)}
                   disabled={!selectedProjectId || importingId === f.id}
-                  className="rounded bg-neutral-900 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                  className="rounded bg-[var(--accent)] px-3 py-1 text-xs font-medium text-[var(--primary)] hover:opacity-90 disabled:opacity-50"
                 >
                   {importingId === f.id ? (
                     <Loader2 className="h-4 w-4 animate-spin inline" />
@@ -454,9 +454,9 @@ function SharePointBrowser({
       </div>
 
       {projects.length === 0 && (
-        <p className="mt-3 text-sm text-amber-700">
+        <p className="mt-3 text-sm text-[var(--muted-strong)]">
           Crea un proyecto antes de importar archivos.{' '}
-          <Link href={`/w/${workspaceSlug}/projects/new`} className="underline">
+          <Link href={`/w/${workspaceSlug}/projects/new`} className="text-[var(--accent)] underline hover:opacity-90">
             Crear proyecto
           </Link>
         </p>

@@ -17,8 +17,8 @@ export default async function ConnectorsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-neutral-900">Conectores</h1>
-      <p className="text-neutral-500 mt-1">
+      <h1 className="text-2xl font-semibold text-[var(--foreground)]">Conectores</h1>
+      <p className="text-[var(--muted)] mt-1">
         Conectá tus cuentas para importar archivos.
       </p>
       <ConnectorsClient

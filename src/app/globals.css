@@ -8,30 +8,39 @@
   /* accerts.com body */
   --font-body: 'Montserrat', sans-serif;
   --font-heading: 'Cinzel', serif;
-  --background: #000000;
-  --foreground: #e2e2e2;
+  /* Contraste y legibilidad: fondo no puro negro, texto principal más legible */
+  --background: #0c0c0c;
+  --foreground: #f0f0f0;
   --heading-color: #ffffff;
 
-  /* Brand (rootVars) */
+  /* Jerarquía: texto secundario legible pero claramente subordinado */
   --primary: #000000;
-  --secondary: #424242;
+  --secondary: #525252;
   --accent: #e4cb86;
-  --border: #333333;
+  --border: #2a2a2a;
+  --border-strong: #404040;
   --border-light: #dddddd;
-  --muted: #8a8a8a;
+  --muted: #9ca3af;
+  --muted-strong: #b4b4b4;
   --white: #ffffff;
 
-  /* Surfaces (dark default) */
-  --sidebar-bg: #0a0a0a;
-  --topbar-bg: #0a0a0a;
-  --card-bg: #111111;
-  --input-bg: #111111;
-  --input-border: #333333;
+  /* Surfaces (dark): jerarquía visual sidebar < main < cards */
+  --sidebar-bg: #080808;
+  --topbar-bg: #080808;
+  --card-bg: #141414;
+  --input-bg: #141414;
+  --input-border: #2a2a2a;
   --focus-ring: #e4cb86;
 
+  /* Feedback en dark mode */
+  --success-bg: rgba(34, 197, 94, 0.15);
+  --success-text: #86efac;
+  --error-bg: rgba(239, 68, 68, 0.15);
+  --error-text: #fca5a5;
+
   /* Shadows (from rootVars) */
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 body {
