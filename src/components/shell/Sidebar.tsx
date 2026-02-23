@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FolderKanban, Settings } from 'lucide-react';
+import { FolderKanban, Settings, Plug } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar({
@@ -18,7 +18,8 @@ export function Sidebar({
   const pathname = usePathname();
   const base = `/w/${workspaceSlug}`;
   const projectsHref = `${base}/projects`;
-  const settingsHref = `${base}/settings/members`;
+  const settingsMembersHref = `${base}/settings/members`;
+  const settingsConnectorsHref = `${base}/settings/connectors`;
 
   return (
     <aside className="w-56 border-r flex flex-col shrink-0 bg-[var(--sidebar-bg)] border-[var(--border)]">
@@ -53,18 +54,32 @@ export function Sidebar({
           Proyectos
         </Link>
         {hasSettings && (
-          <Link
-            href={settingsHref}
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-              pathname.startsWith(settingsHref)
-                ? 'bg-[var(--card-bg)] text-[var(--accent)] font-medium'
-                : 'text-[var(--foreground)] hover:bg-[var(--card-bg)] hover:text-[var(--white)]'
-            )}
-          >
-            <Settings className="h-4 w-4 shrink-0" />
-            Configuración
-          </Link>
+          <>
+            <Link
+              href={settingsMembersHref}
+              className={cn(
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === settingsMembersHref
+                  ? 'bg-[var(--card-bg)] text-[var(--accent)] font-medium'
+                  : 'text-[var(--foreground)] hover:bg-[var(--card-bg)] hover:text-[var(--white)]'
+              )}
+            >
+              <Settings className="h-4 w-4 shrink-0" />
+              Configuración
+            </Link>
+            <Link
+              href={settingsConnectorsHref}
+              className={cn(
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === settingsConnectorsHref
+                  ? 'bg-[var(--card-bg)] text-[var(--accent)] font-medium'
+                  : 'text-[var(--foreground)] hover:bg-[var(--card-bg)] hover:text-[var(--white)]'
+              )}
+            >
+              <Plug className="h-4 w-4 shrink-0" />
+              Conectores
+            </Link>
+          </>
         )}
       </nav>
     </aside>
