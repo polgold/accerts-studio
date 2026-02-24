@@ -71,7 +71,7 @@ export async function uploadSmall(
   const itemPath = `${rootPath}/${encodeURIComponent(fileName)}:/content`;
   const res = await getGraphClient(accessToken, itemPath, {
     method: 'PUT',
-    body: content,
+    body: content as unknown as BodyInit,
     headers: { 'Content-Type': 'application/octet-stream' },
   });
   if (!res.ok) {
