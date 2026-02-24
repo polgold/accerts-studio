@@ -138,7 +138,10 @@ export async function listFolder(
 ): Promise<{ items: GraphDriveItemWithDownload[]; error?: never } | { items?: never; error: string; status?: number }> {
   const { childrenPath } = ensureFolderAndGetPath(mode, workspaceId, projectId);
   const result = await graphFetchWithRetry<{ value: GraphDriveItemWithDownload[] }>(accessToken, childrenPath);
-  if (result.error) return { items: [], error: result.error, status: result.status };
+  if (result.error) {
+    const status = 'status' in result ? result.status : undefined;
+    return { error: result.error, status };
+  }
   return { items: result.data?.value ?? [] };
 }
 
@@ -151,7 +154,10 @@ export async function getDriveItem(
 ): Promise<{ data: GraphDriveItemWithDownload; error?: never } | { data?: never; error: string; status?: number }> {
   const path = `/drives/${driveId}/items/${itemId}`;
   const result = await graphFetchWithRetry<GraphDriveItemWithDownload>(accessToken, path);
-  if (result.error) return { error: result.error, status: result.status };
+  if (result.error) {
+    const status = 'status' in result ? result.status : undefined;
+    return { error: result.error, status };
+  }
   if (!result.data) return { error: 'Item not found', status: 404 };
   return { data: result.data };
 }
@@ -166,7 +172,10 @@ export async function getDownloadUrl(
     accessToken,
     `/drives/${driveId}/items/${itemId}`
   );
-  if (result.error || !result.data) return { error: result.error ?? 'Item not found', status: result.status ?? 404 };
+  if (result.error || !result.data) {
+    const status = 'status' in result ? result.status : 404;
+    return { error: result.error ?? 'Item not found', status };
+  }
   const url = (result.data as GraphDriveItemWithDownload)['@microsoft.graph.downloadUrl'];
   if (!url) return { error: 'Download URL no disponible', status: 404 };
   return { url };
