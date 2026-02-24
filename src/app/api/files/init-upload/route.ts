@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClientForRouteHandler } from '@/lib/supabase/route-handler';
 import { requireWorkspaceMemberInApi } from '@/lib/connectors/workspace-auth';
+import { getValidAccessToken } from '@/lib/connectors/microsoft-graph';
 import {
   getO365StorageConfig,
-  getValidAccessToken,
   createUploadSession,
   uploadSmall,
   getDriveId,

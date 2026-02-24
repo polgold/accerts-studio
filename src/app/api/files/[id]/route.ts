@@ -24,20 +24,21 @@ export async function GET(
     return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 });
   }
 
-  const auth = await requireWorkspaceMemberInApi(supabase, row.workspace_id);
+  const fileRow = row as { workspace_id: string; connection_id: string; provider_item_id: string; provider: string; drive_id: string | null };
+  const auth = await requireWorkspaceMemberInApi(supabase, fileRow.workspace_id);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const tokenResult = await getValidAccessToken(row.connection_id, supabase);
+  const tokenResult = await getValidAccessToken(fileRow.connection_id, supabase);
   if (tokenResult.error || !tokenResult.accessToken) {
     return NextResponse.json({ error: 'Token no disponible' }, { status: 502 });
   }
 
-  let driveId = row.drive_id;
+  let driveId = fileRow.drive_id;
   if (!driveId) {
     const { getDriveId } = await import('@/lib/o365-storage');
-    const mode = row.provider === 'sharepoint' ? 'sharepoint' : 'onedrive';
+    const mode = fileRow.provider === 'sharepoint' ? 'sharepoint' : 'onedrive';
     const driveRes = await getDriveId(tokenResult.accessToken, mode);
     driveId = driveRes.driveId ?? null;
   }
@@ -45,7 +46,7 @@ export async function GET(
     return NextResponse.json({ error: 'No se pudo obtener el drive' }, { status: 500 });
   }
 
-  const urlResult = await getDownloadUrl(tokenResult.accessToken, driveId, row.provider_item_id);
+  const urlResult = await getDownloadUrl(tokenResult.accessToken, driveId, fileRow.provider_item_id);
   if (urlResult.error || !urlResult.url) {
     return NextResponse.json({ error: urlResult.error ?? 'URL no disponible' }, { status: 404 });
   }
@@ -65,7 +66,7 @@ export async function DELETE(
   const supabase = createServerClientForRouteHandler(request, res);
   const { data: row, error } = await supabase
     .from('workspace_files')
-    .select('workspace_id, connection_id, provider_item_id, provider')
+    .select('workspace_id, connection_id, provider_item_id, provider, drive_id')
     .eq('id', id)
     .single();
 
@@ -73,20 +74,21 @@ export async function DELETE(
     return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 });
   }
 
-  const auth = await requireWorkspaceMemberInApi(supabase, row.workspace_id);
+  const fileRow = row as { workspace_id: string; connection_id: string; provider_item_id: string; provider: string; drive_id: string | null };
+  const auth = await requireWorkspaceMemberInApi(supabase, fileRow.workspace_id);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const tokenResult = await getValidAccessToken(row.connection_id, supabase);
+  const tokenResult = await getValidAccessToken(fileRow.connection_id, supabase);
   if (tokenResult.error || !tokenResult.accessToken) {
     return NextResponse.json({ error: 'Token no disponible' }, { status: 502 });
   }
 
-  let driveId = row.drive_id;
+  let driveId = fileRow.drive_id;
   if (!driveId) {
     const { getDriveId } = await import('@/lib/o365-storage');
-    const mode = row.provider === 'sharepoint' ? 'sharepoint' : 'onedrive';
+    const mode = fileRow.provider === 'sharepoint' ? 'sharepoint' : 'onedrive';
     const driveRes = await getDriveId(tokenResult.accessToken, mode);
     driveId = driveRes.driveId ?? null;
   }
@@ -94,7 +96,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'No se pudo obtener el drive' }, { status: 500 });
   }
 
-  const delResult = await deleteDriveItem(tokenResult.accessToken, driveId, row.provider_item_id);
+  const delResult = await deleteDriveItem(tokenResult.accessToken, driveId, fileRow.provider_item_id);
   if (!delResult.ok) {
     return NextResponse.json({ error: delResult.error ?? 'Error al eliminar' }, { status: delResult.status ?? 500 });
   }
