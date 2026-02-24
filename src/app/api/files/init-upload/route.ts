@@ -62,28 +62,27 @@ export async function POST(request: NextRequest) {
   const accessToken = tokenResult.accessToken;
 
   // Small upload: optional body with file bytes (base64)
-  const fileBase64 = body.fileBase64 ?? body.file;
+  const fileBase64 =
+    typeof body.fileBase64 === 'string' ? body.fileBase64 : typeof body.file === 'string' ? body.file : null;
   if (fileSize > 0 && fileSize < SIMPLE_UPLOAD_MAX && fileBase64) {
-    if (fileBase64) {
-      const buf = Buffer.from(fileBase64, 'base64');
-      const uploadResult = await uploadSmall(accessToken, mode, workspaceId, fileName, buf, projectId);
-      if (uploadResult.error) {
-        return NextResponse.json({ error: uploadResult.error }, { status: uploadResult.status ?? 500 });
-      }
-      const item = uploadResult.data as { id: string; name: string; size?: number; webUrl?: string; file?: { mimeType?: string }; parentReference?: { driveId?: string } };
-      const driveId = item.parentReference?.driveId ?? (await getDriveId(accessToken, mode)).driveId ?? '';
-      return NextResponse.json({
-        file: {
-          id: item.id,
-          name: item.name,
-          size: item.size ?? 0,
-          webUrl: item.webUrl,
-          driveId,
-          mimeType: (item as { file?: { mimeType?: string } }).file?.mimeType,
-        },
-        driveId,
-      });
+    const buf = Buffer.from(fileBase64, 'base64');
+    const uploadResult = await uploadSmall(accessToken, mode, workspaceId, fileName, buf, projectId);
+    if (uploadResult.error) {
+      return NextResponse.json({ error: uploadResult.error }, { status: uploadResult.status ?? 500 });
     }
+    const item = uploadResult.data as { id: string; name: string; size?: number; webUrl?: string; file?: { mimeType?: string }; parentReference?: { driveId?: string } };
+    const driveId = item.parentReference?.driveId ?? (await getDriveId(accessToken, mode)).driveId ?? '';
+    return NextResponse.json({
+      file: {
+        id: item.id,
+        name: item.name,
+        size: item.size ?? 0,
+        webUrl: item.webUrl,
+        driveId,
+        mimeType: (item as { file?: { mimeType?: string } }).file?.mimeType,
+      },
+      driveId,
+    });
   }
 
   // Large file: return upload session URL for client to upload chunks
