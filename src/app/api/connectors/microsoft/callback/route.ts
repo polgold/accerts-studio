@@ -24,14 +24,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${base}/onboarding?error=oauth_invalid_state`);
   }
 
-  const clientId = process.env.AZURE_CLIENT_ID;
-  const clientSecret = process.env.AZURE_CLIENT_SECRET;
-  const redirectUri = process.env.AZURE_REDIRECT_URI;
+  const clientId = process.env.MICROSOFT_CLIENT_ID ?? process.env.AZURE_CLIENT_ID;
+  const clientSecret = process.env.MICROSOFT_CLIENT_SECRET ?? process.env.AZURE_CLIENT_SECRET;
+  const redirectUri = process.env.MICROSOFT_REDIRECT_URI ?? process.env.AZURE_REDIRECT_URI;
+  const tenant = process.env.MICROSOFT_TENANT_ID ?? process.env.AZURE_TENANT_ID ?? 'common';
   if (!clientId || !clientSecret || !redirectUri) {
     const base = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
     return NextResponse.redirect(`${base}/onboarding?error=oauth_config`);
   }
 
+  const tokenEndpoint = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`;
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     client_id: clientId,
@@ -41,22 +43,28 @@ export async function GET(request: NextRequest) {
     code_verifier: codeVerifier,
   });
 
-  const tokenRes = await fetch(TOKEN_URL, {
+  const tokenRes = await fetch(tokenEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
   });
 
+  const data = (await tokenRes.json().catch(() => ({}))) as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+    error_description?: string;
+  };
   if (!tokenRes.ok) {
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+    const isMsa = /personal|consumer|live\.com|msa|account.*type/i.test(data.error_description ?? '');
+    const errorParam = isMsa ? 'msa_not_supported' : 'token_exchange';
+    return NextResponse.redirect(`${base}/w/${payload.workspaceSlug}/settings/connectors?error=${errorParam}`);
+  }
+  if (!data.access_token || !data.refresh_token || typeof data.expires_in !== 'number') {
     const base = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
     return NextResponse.redirect(`${base}/w/${payload.workspaceSlug}/settings/connectors?error=token_exchange`);
   }
-
-  const data = (await tokenRes.json()) as {
-    access_token: string;
-    refresh_token: string;
-    expires_in: number;
-  };
 
   const expiresAt = new Date(Date.now() + data.expires_in * 1000);
 

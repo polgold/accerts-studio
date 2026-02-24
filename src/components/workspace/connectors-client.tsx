@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Cloud, FileText, Loader2, Unplug } from 'lucide-react';
+import { O365FilesUpload } from './o365-files-upload';
 
 type Connection = { id: string; displayName: string; expiresAt: string; createdAt: string };
 type Project = { id: string; slug: string; title: string };
@@ -33,7 +34,9 @@ export function ConnectorsClient({
     if (error === 'oauth_missing') setMessage({ type: 'error', text: 'Faltan datos de autorización. Intenta de nuevo.' });
     if (error === 'oauth_invalid_state') setMessage({ type: 'error', text: 'Sesión inválida. Intenta conectar de nuevo.' });
     if (error === 'token_exchange') setMessage({ type: 'error', text: 'Error al obtener tokens. Intenta de nuevo.' });
+    if (error === 'msa_not_supported') setMessage({ type: 'error', text: 'Las cuentas personales de Microsoft (MSA) no están soportadas. Usa una cuenta laboral o educativa.' });
     if (error === 'save_failed') setMessage({ type: 'error', text: 'Error al guardar la conexión.' });
+    if (error === 'oauth_config') setMessage({ type: 'error', text: 'Falta configuración OAuth (MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, MICROSOFT_REDIRECT_URI).' });
   }, [searchParams]);
 
   useEffect(() => {
@@ -138,14 +141,22 @@ export function ConnectorsClient({
       </section>
 
       {connections.length > 0 && (
-        <SharePointBrowser
-          workspaceId={workspaceId}
-          workspaceSlug={workspaceSlug}
-          connections={connections}
-          projects={projects}
-          onError={(err) => setMessage({ type: 'error', text: err })}
-          onImportSuccess={(title) => setMessage({ type: 'success', text: `"${title}" importado.` })}
-        />
+        <>
+          <O365FilesUpload
+            workspaceId={workspaceId}
+            connectionId={connections[0].id}
+            onError={(err) => setMessage({ type: 'error', text: err })}
+            onUploadSuccess={() => setMessage({ type: 'success', text: 'Archivo subido a Microsoft 365.' })}
+          />
+          <SharePointBrowser
+            workspaceId={workspaceId}
+            workspaceSlug={workspaceSlug}
+            connections={connections}
+            projects={projects}
+            onError={(err) => setMessage({ type: 'error', text: err })}
+            onImportSuccess={(title) => setMessage({ type: 'success', text: `"${title}" importado.` })}
+          />
+        </>
       )}
     </div>
   );

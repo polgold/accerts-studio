@@ -1,6 +1,6 @@
 'use client';
 
-type Version = { id: string; version_number: number; storage_path: string | null; external_url: string | null; poster_path: string | null; content_json: Record<string, unknown> | null; created_at: string };
+type Version = { id: string; version_number: number; storage_path: string | null; external_url: string | null; poster_path: string | null; content_json: Record<string, unknown> | null; created_at: string; web_url?: string | null };
 
 export function DocumentPreview({
   docType,
@@ -47,19 +47,30 @@ export function DocumentPreview({
       </div>
     );
   }
-  if ((docType === 'pdf' || docType === 'image') && version.storage_path) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const bucket = 'documents';
-    const path = version.storage_path;
-    const src = supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}` : '';
-    if (docType === 'image') {
-      return <img src={src} alt="" className="max-w-full h-auto" />;
+  if (docType === 'pdf' || docType === 'image') {
+    if (version.web_url) {
+      return (
+        <div className="p-6 space-y-2">
+          <a href={version.web_url} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] underline">
+            Abrir en Microsoft 365
+          </a>
+        </div>
+      );
     }
-    return (
-      <div className="min-h-[400px] flex items-center justify-center p-6">
-        <iframe src={src} title="PDF" className="w-full h-[80vh] rounded" />
-      </div>
-    );
+    if (version.storage_path) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const bucket = 'documents';
+      const path = version.storage_path;
+      const src = supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}` : '';
+      if (docType === 'image') {
+        return <img src={src} alt="" className="max-w-full h-auto" />;
+      }
+      return (
+        <div className="min-h-[400px] flex items-center justify-center p-6">
+          <iframe src={src} title="PDF" className="w-full h-[80vh] rounded" />
+        </div>
+      );
+    }
   }
   return (
     <div className="p-6 text-neutral-500 text-sm">

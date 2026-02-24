@@ -4,12 +4,32 @@ import { decrypt, encrypt } from './encryption';
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 const TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
 
+/** Scopes for OneDrive (Files.ReadWrite) + SharePoint read (Sites.Read.All, Files.Read.All). */
 export const MICROSOFT_SCOPES = [
   'offline_access',
   'User.Read',
+  'Files.ReadWrite',
   'Sites.Read.All',
   'Files.Read.All',
 ].join(' ');
+
+/** SharePoint delegated: add Files.ReadWrite.All and Sites.ReadWrite.All if upload to SharePoint needed. */
+export const MICROSOFT_SCOPES_SHAREPOINT = [
+  'offline_access',
+  'User.Read',
+  'Files.ReadWrite',
+  'Files.ReadWrite.All',
+  'Sites.Read.All',
+  'Sites.ReadWrite.All',
+].join(' ');
+
+function getMicrosoftConfig() {
+  const tenant = process.env.MICROSOFT_TENANT_ID ?? process.env.AZURE_TENANT_ID ?? 'common';
+  const clientId = process.env.MICROSOFT_CLIENT_ID ?? process.env.AZURE_CLIENT_ID;
+  const clientSecret = process.env.MICROSOFT_CLIENT_SECRET ?? process.env.AZURE_CLIENT_SECRET;
+  const redirectUri = process.env.MICROSOFT_REDIRECT_URI ?? process.env.AZURE_REDIRECT_URI;
+  return { tenant, clientId, clientSecret, redirectUri };
+}
 
 export interface GraphTokens {
   access_token: string;
@@ -50,12 +70,12 @@ export async function getValidAccessToken(
     return { accessToken };
   }
 
-  const clientId = process.env.AZURE_CLIENT_ID;
-  const clientSecret = process.env.AZURE_CLIENT_SECRET;
+  const { clientId, clientSecret, tenant } = getMicrosoftConfig();
   if (!clientId || !clientSecret) {
     return { error: 'Configuración OAuth incompleta', code: 'CONFIG_MISSING' };
   }
 
+  const tokenEndpoint = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`;
   const body = new URLSearchParams({
     grant_type: 'refresh_token',
     client_id: clientId,
@@ -63,7 +83,7 @@ export async function getValidAccessToken(
     refresh_token: refreshToken,
   });
 
-  const tokenRes = await fetch(TOKEN_URL, {
+  const tokenRes = await fetch(tokenEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
@@ -181,4 +201,75 @@ export interface GraphDrivesResponse {
 
 export interface GraphChildrenResponse {
   value: GraphDriveItem[];
+}
+
+/** Drive item with download URL (from @microsoft.graph.downloadUrl) */
+export interface GraphDriveItemWithDownload extends GraphDriveItem {
+  '@microsoft.graph.downloadUrl'?: string;
+  webUrl?: string;
+}
+
+/** Upload session for large files */
+export interface GraphUploadSession {
+  uploadUrl: string;
+  expirationDateTime: string;
+  nextExpectedRanges: string[];
+}
+
+const RETRY_STATUSES = [429, 503];
+const RETRY_DELAY_MS = 2000;
+const MAX_RETRIES = 3;
+
+/**
+ * Server-only Graph API client with retries for 429/503.
+ * Use for GET/POST/PUT/PATCH; for binary upload use the uploadUrl from createUploadSession.
+ */
+export async function getGraphClient(
+  accessToken: string,
+  path: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const url = path.startsWith('http') ? path : `${GRAPH_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+  let lastRes: Response | null = null;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(options.body && typeof options.body !== 'string' ? {} : { 'Content-Type': 'application/json' }),
+        ...options.headers,
+      },
+    });
+    lastRes = res;
+    if (RETRY_STATUSES.includes(res.status) && attempt < MAX_RETRIES) {
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * (attempt + 1)));
+      continue;
+    }
+    return res;
+  }
+  return lastRes!;
+}
+
+/** GET JSON with retries; returns parsed data or error. */
+export async function graphFetchWithRetry<T>(
+  accessToken: string,
+  path: string,
+  options: RequestInit = {}
+): Promise<{ data: T; error?: never } | { data?: never; error: string; status?: number; code?: string }> {
+  const res = await getGraphClient(accessToken, path, options);
+  const body = await res.json().catch(() => ({})) as T | { error?: { message?: string; code?: string }; message?: string };
+  if (!res.ok) {
+    const errBody = body as { error?: { message?: string; code?: string }; message?: string };
+    const msg = errBody.error?.message ?? errBody.message ?? res.statusText;
+    if (res.status === 401) return { error: 'Token inválido o expirado', status: 401 };
+    if (res.status === 403) {
+      const code = errBody.error?.code;
+      if (code === 'accessDenied' || String(msg).toLowerCase().includes('personal') || String(msg).toLowerCase().includes('msa')) {
+        return { error: 'Las cuentas personales de Microsoft (MSA) no están soportadas. Usa una cuenta laboral o educativa.', status: 403, code: 'MSA_NOT_SUPPORTED' };
+      }
+      return { error: msg || 'Permisos insuficientes', status: 403 };
+    }
+    return { error: msg || `Error ${res.status}`, status: res.status };
+  }
+  return { data: body as T };
 }

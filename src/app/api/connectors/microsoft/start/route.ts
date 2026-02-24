@@ -26,10 +26,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const clientId = process.env.AZURE_CLIENT_ID;
-  const redirectUri = process.env.AZURE_REDIRECT_URI;
+  const redirectUri = process.env.MICROSOFT_REDIRECT_URI ?? process.env.AZURE_REDIRECT_URI;
+  const clientId = process.env.MICROSOFT_CLIENT_ID ?? process.env.AZURE_CLIENT_ID;
+  const tenant = process.env.MICROSOFT_TENANT_ID ?? process.env.AZURE_TENANT_ID ?? 'common';
   if (!clientId || !redirectUri) {
-    return NextResponse.json({ error: 'OAuth no configurado (AZURE_CLIENT_ID / AZURE_REDIRECT_URI)' }, { status: 503 });
+    return NextResponse.json({ error: 'OAuth no configurado (MICROSOFT_CLIENT_ID / MICROSOFT_REDIRECT_URI)' }, { status: 503 });
   }
 
   const codeVerifier = base64Url(randomBytes(32));
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     path: '/',
   });
 
-  const authUrl = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+  const authUrl = new URL(`https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`);
   authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('response_type', 'code');
