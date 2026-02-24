@@ -97,7 +97,8 @@ export async function createUploadSession(
     body: JSON.stringify({ item: { '@microsoft.graph.conflictBehavior': 'rename' } }),
   });
   if (result.error || !result.data?.uploadUrl) {
-    return { error: result.error ?? 'No upload URL', status: result.status };
+    const status = 'status' in result ? result.status : undefined;
+    return { error: result.error ?? 'No upload URL', status };
   }
   return { uploadUrl: result.data.uploadUrl };
 }
