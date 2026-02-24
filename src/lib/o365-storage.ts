@@ -115,7 +115,7 @@ export async function uploadChunk(
       'Content-Length': String(chunk.byteLength),
       'Content-Range': `bytes ${range.start}-${range.end - 1}/${range.total}`,
     },
-    body: chunk,
+    body: chunk as unknown as BodyInit,
   });
   if (res.status === 202) {
     const nextRange = res.headers.get('Location');
